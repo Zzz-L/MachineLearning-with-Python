@@ -34,7 +34,35 @@ if _name_=='_main_':
     for i in range(len(citycluster)):#expenses和citycluster顺序为什么一致
         print("Expenses:%.2f" % expenses[i]) #.2表示保留两位小数
         print(citycluster[i])
-        
+
+#----------------------------k-means实现图像分割----------------------- 
+#============获取数据=============
+import PIL.Image as image  #加载PIL包，用于加载创建图片
+import numpy as np
+from sklearn.cluster import KMeans
+def loaddata(filepath):
+    f=open(filepath,'rb')#以二进制的格式打开图片
+    data=[]
+    img=image.open(f) #打开图片
+    m,n=img.size #获取图片像素大小
+    for i in range(m):
+        for j in range(n):
+            x,y,z=img.getpixel((i,j)) #获取每个像素点的RGB值
+            data.append([x/256,y/256,z/256]) #将RGB值转化为0-1
+    f.close()
+    return np.mat(data),m,n
+imgData,row,col = loaddata('starbucks.jpg')
+#============构建模型=============
+km=KMeans(n_clusters=3)
+label=km.fit_predict(imgData)
+label=label.reshape([row,col])
+pic_new=image.new("L",(row,col)) #创建一张新的图片
+for i in range(row):
+    for j in range(col):
+        pic_new.putpixel((i,j),int(256/(label[i,j]+1))) #向图片中添加RGB值 RGB的转换？？
+
+pic_new.save('result.jpg','JPEG')              
+
 #----------------------------DBSCAN聚类-----------------------    
 from sklearn.cluster import DBSCAN
 from sklearn import metrics #轮廓系数评价聚类效果,越大越好
